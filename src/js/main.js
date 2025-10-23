@@ -4,6 +4,9 @@ const mainContainer = document.querySelector("#main-content");
 const searchInput = document.getElementById("search-input"); 
 const searchButton = document.getElementById("search-button");
 
+console.log("Personajes: Rick Sanchez, Morty Smith, Summer Smith, Beth Smith, and Jerry Smith, with key recurring figures such as Mr. Poopybutthole, Birdperson / Phoenixperson, Squanchy, Evil Morty, Unity, Mr. Nimbus, Jessica, and Principal Vagina.");
+
+
 function displayError(m) {
     mainContainer.innerHTML = `
         <div class="col-12">
@@ -38,32 +41,33 @@ function renderCharacters(cs) {
     });
 }   
 
-function getCharacters(s = '') {
+async function getCharacters(s = '') {
     mainContainer.innerHTML = '<div class="col-12 text-center my-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
 
     const url = s.trim() 
         ? `${BASE_API_URL}/?name=${s.trim()}`
         : BASE_API_URL;
 
-    fetch(url)
-    .then(r => {
-        if (!r.ok) {
-            if (r.status === 404) {
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            if (response.status === 404) {
                 throw new Error(`No se encontró ningún personaje con el nombre "${s}".`);
             }
-            throw new Error(`Error en el servidor: Estado ${r.status}`);
+            throw new Error(`Error en el servidor: Estado ${response.status}`);
         }
-        return r.json();
-    })
-    .then(d => {
-        if (d.results) {
-            renderCharacters(d.results);
+
+        const data = await response.json();
+
+        if (data.results) {
+            renderCharacters(data.results);
         }
-    })
-    .catch(e => {
+
+    } catch (e) {
         console.error("Fallo en la petición:", e.message);
         displayError(e.message); 
-    });
+    }
 }
 
 searchButton.addEventListener('click', () => {
